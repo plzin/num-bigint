@@ -1042,6 +1042,40 @@ impl BigUint {
             self.normalize();
         }
     }
+
+    /// Truncate the number to the given number of bits.
+    /// This effectively computes the remainder of dividing this number by 2^bits.
+    pub fn truncate(&mut self, bits: u64) {
+        let bits_per_digit = big_digit::BITS as u64;
+        let num_digits = bits.div_ceil(bits_per_digit)
+            .to_usize().unwrap_or(usize::MAX);
+
+        if num_digits > self.data.len() {
+            return;
+        }
+
+        if num_digits == 0 {
+            self.data.clear();
+            return;
+        }
+
+        self.data.truncate(num_digits);
+        // The number of bits to keep in the most significant digit
+        // or 0 if all bits should be kept.
+        let keep = bits % bits_per_digit;
+        if keep > 0 {
+            let mask = ((1 as BigDigit) << keep) - 1;
+            self.data[num_digits - 1] &= mask;
+        }
+        self.normalize();
+    }
+
+    /// Truncate the number to the given number of bits.
+    /// This effectively computes the remainder of dividing this number by 2^bits.
+    pub fn truncated(mut self, bits: u64) -> Self {
+        self.truncate(bits);
+        self
+    }
 }
 
 impl num_traits::FromBytes for BigUint {

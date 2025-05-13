@@ -1919,3 +1919,26 @@ fn test_set_bit() {
     x.set_bit(1, false);
     assert_eq!(x, BigUint::zero());
 }
+
+#[test]
+fn test_truncate() {
+    let values: Vec<(&[u32], u32)> = vec![
+        (&[1], 64),
+        (&[1, 0, 1], 64),
+        (&[3], 1),
+        (&[u32::MAX, u32::MAX], 16),
+        (&[u32::MAX, u32::MAX], 48),
+        (&[u32::MAX, u32::MAX, u32::MAX, u32::MAX], 80),
+        (&[0, 0, u32::MAX], 64),
+        (&[1, 0, 0, 1], 96),
+        (&[1239812, 2398392], 37),
+        (&[234082, 293829], 0),
+        (&[2394829, 1313010, 98943439, 82785723, 34739499, 57457498], 113),
+        (&[2394829, 1313010, 98943439, 82785723, 34739499, 57457498], 5),
+    ];
+
+    for (digits, n) in values {
+        let i = BigUint::from_slice(digits);
+        assert_eq!(i.clone().truncated(n as u64), i % (BigUint::from(1u8) << n));
+    }
+}
